@@ -1,35 +1,34 @@
 package com.lxy.completelayoutdemp;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * create by lxy
+ * 2018/8/21
+ */
 public  class CompleteLayoutAdapter {
+
     private Context mContext;
     private ArrayList<String> data = new ArrayList<>();
     private CompleteLayout mCompleteLayout;
 
-
     private CompleteLayoutItemClickListener mItemClickListener;
     private CompleteLayoutItemLongClickLisnter mItemLongClickLisnter;
-
-
 
     public CompleteLayoutAdapter(Context context) {
         mContext = context;
     }
-
 
     public CompleteLayoutAdapter(Context mContext, List<String> textList) {
         mContext = mContext;
         if (textList != null){
             data.addAll(textList);
         }
-
     }
-
 
     /** 添加一个数据
      * @param text
@@ -58,13 +57,13 @@ public  class CompleteLayoutAdapter {
         if (textList == null || textList.size() == 0){
             return;
         }
+
         data.addAll(textList);
         for (int i = 0;i<textList.size();i++){
-            mCompleteLayout.addTextView(textList.get(i),data.size()-textList.size()-i);
+
+            mCompleteLayout.addTextView(textList.get(i),data.size()-textList.size()+i);
         }
-
     }
-
 
     /**  设置新的数据
      * @param textList
@@ -73,11 +72,29 @@ public  class CompleteLayoutAdapter {
         data.clear();
         mCompleteLayout.removeAllChildViews();
         if (textList != null && textList.size() != 0){
-            this.data.addAll(textList);
+            data.addAll(textList);
             for (int i = 0;i<textList.size();i++){
                 mCompleteLayout.addTextView(textList.get(i),i);
             }
         }
+    }
+
+    /**
+     * 删除所有的view
+     */
+    public void removeAll(){
+        data.clear();
+        mCompleteLayout.removeAllChildViews();
+    }
+
+
+    /**
+     * 删除一个子view
+     * @param position
+     */
+    public void remove(int position){
+        data.remove(position);
+        mCompleteLayout.removeChildView(position);
     }
 
 
@@ -95,7 +112,6 @@ public  class CompleteLayoutAdapter {
     public void bindCompleteLayout(CompleteLayout completeLayout){
         mCompleteLayout = completeLayout;
     }
-
 
     /**
      * 点击监听
@@ -132,9 +148,5 @@ public  class CompleteLayoutAdapter {
     interface CompleteLayoutItemLongClickLisnter{
         void onItemLongClick(CompleteLayoutAdapter adapter,TextView textView,String text,int position);
     }
-
-
-
-
 
 }
