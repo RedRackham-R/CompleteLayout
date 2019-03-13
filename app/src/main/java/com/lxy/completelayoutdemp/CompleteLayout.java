@@ -1,27 +1,27 @@
-package com.lxy.completelayoutdemp;
+package com.lxy.wanandroidkt.weight.autoCompleteLayout;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.IdRes;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.widget.ScrollView;
 import android.widget.TextView;
+
+import com.lxy.wanandroidkt.R;
 
 /**
  * create by lxy
  * 2018/8/21
  */
 public class CompleteLayout extends ViewGroup {
-    private static final String TAG = "CompleteLayout";
+
     private Context mContext;
 
     private static int LINE_SPACING;//行間距
@@ -33,6 +33,9 @@ public class CompleteLayout extends ViewGroup {
     private static int TEXT_PADDING;//文字padding的padding
 
     private CompleteLayoutAdapter mAdapter;
+
+
+    private int mParentWidth = -1;//父控件的宽度
 
 
     public CompleteLayout(Context context) {
@@ -48,22 +51,22 @@ public class CompleteLayout extends ViewGroup {
 
         //第二个参数就是我们在styles.xml文件中的<declare-styleable>标签
         //即属性集合的标签，在R文件中名称为R.styleable+name
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.CompleteLayout);
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.styleable_auto_completeLayout);
 
 
         //第一个参数为属性集合里面的属性，R文件名称：R.styleable+属性集合名称+下划线+属性名称
         //第二个参数为，如果没有设置这个属性，则设置的默认的值
 
         //行列间距
-        COLUMN_SPACING = (int) typedArray.getDimension(R.styleable.CompleteLayout_ColumnSpacing, 20);
-        LINE_SPACING = (int) typedArray.getDimension(R.styleable.CompleteLayout_LineSpacing, 26);
+        COLUMN_SPACING = (int) typedArray.getDimension(R.styleable.styleable_auto_completeLayout_ColumnSpacing, 20);
+        LINE_SPACING = (int) typedArray.getDimension(R.styleable.styleable_auto_completeLayout_LineSpacing, 26);
         //textview的设置
 
 
-        TEXT_COLOR = typedArray.getColor(R.styleable.CompleteLayout_TextColor, ContextCompat.getColor(getContext(), R.color.colorGray80));
-        TEXT_SIZE = typedArray.getInt(R.styleable.CompleteLayout_TextSize, 14);
-        TEXT_PADDING = typedArray.getInt(R.styleable.CompleteLayout_TextSize, 16);
-        TEXT_BACKGROUND = typedArray.getInt(R.styleable.CompleteLayout_TextBackground, R.drawable.selector_item_btn);
+        TEXT_COLOR = typedArray.getColor(R.styleable.styleable_auto_completeLayout_TextColor, ContextCompat.getColor(getContext(), R.color.color_gray80));
+        TEXT_SIZE = typedArray.getInt(R.styleable.styleable_auto_completeLayout_TextSize, 14);
+        TEXT_PADDING = typedArray.getInt(R.styleable.styleable_auto_completeLayout_TextSize, 16);
+        TEXT_BACKGROUND = typedArray.getInt(R.styleable.styleable_auto_completeLayout_TextBackground, R.drawable.selector_item_btn);
 
 
         //最后记得将TypedArray对象回收
@@ -77,22 +80,22 @@ public class CompleteLayout extends ViewGroup {
 
         //第二个参数就是我们在styles.xml文件中的<declare-styleable>标签
         //即属性集合的标签，在R文件中名称为R.styleable+name
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.CompleteLayout);
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.styleable_auto_completeLayout);
 
 
         //第一个参数为属性集合里面的属性，R文件名称：R.styleable+属性集合名称+下划线+属性名称
         //第二个参数为，如果没有设置这个属性，则设置的默认的值
 
         //行列间距
-        COLUMN_SPACING = (int) typedArray.getDimension(R.styleable.CompleteLayout_ColumnSpacing, 32);
-        LINE_SPACING = (int) typedArray.getDimension(R.styleable.CompleteLayout_LineSpacing, 32);
+        COLUMN_SPACING = (int) typedArray.getDimension(R.styleable.styleable_auto_completeLayout_ColumnSpacing, 32);
+        LINE_SPACING = (int) typedArray.getDimension(R.styleable.styleable_auto_completeLayout_LineSpacing, 32);
         //textview的设置
 
 
-        TEXT_COLOR = typedArray.getColor(R.styleable.CompleteLayout_TextColor, ContextCompat.getColor(getContext(), R.color.colorGray80));
-        TEXT_SIZE = typedArray.getInt(R.styleable.CompleteLayout_TextSize, 18);
-        TEXT_PADDING = typedArray.getInt(R.styleable.CompleteLayout_TextSize, 18);
-        TEXT_BACKGROUND = typedArray.getInt(R.styleable.CompleteLayout_TextBackground, R.drawable.selector_item_btn);
+        TEXT_COLOR = typedArray.getColor(R.styleable.styleable_auto_completeLayout_TextColor, ContextCompat.getColor(getContext(), R.color.color_gray80));
+        TEXT_SIZE = typedArray.getInt(R.styleable.styleable_auto_completeLayout_TextSize, 18);
+        TEXT_PADDING = typedArray.getInt(R.styleable.styleable_auto_completeLayout_TextSize, 18);
+        TEXT_BACKGROUND = typedArray.getInt(R.styleable.styleable_auto_completeLayout_TextBackground, R.drawable.selector_item_btn);
 
         //最后记得将TypedArray对象回收
         typedArray.recycle();
@@ -102,14 +105,19 @@ public class CompleteLayout extends ViewGroup {
 
 
     private void init() {
-        setLayoutTransition(TransationAnimManager.getInstance().creatDefualLayoutTransition());//设置子View添加和删除的动画 要使用动画必须在控件xml中设置 android:animateLayoutChanges="true"
-
+        setLayoutTransition(CompleteTransationAnimManager.getInstance().creatDefualLayoutTransition());//设置子View添加和删除的动画 要使用动画必须在控件xml中设置 android:animateLayoutChanges="true"
         requestDisallowInterceptTouchEvent(true);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        // 获得它的父容器为它设置的测量模式和大小
+        int sizeWidth = MeasureSpec.getSize(widthMeasureSpec);
+
+        mParentWidth = sizeWidth;
+
         measureChildren(widthMeasureSpec, heightMeasureSpec); //重新計算所有子view的寬高
 
         //寬度
@@ -126,6 +134,7 @@ public class CompleteLayout extends ViewGroup {
 
         if (childCount == 0) {//當前沒有子view
             width = 0;
+            height = 0;
         } else {
             width = getWidthSize(measurWidthMod, measurWidthSize);//根據寬度屬性去設置寬度
             height = getHeightSize(measureHeightMod, measureHeightSize);//根据高度属性设置高度
@@ -139,15 +148,14 @@ public class CompleteLayout extends ViewGroup {
         int childCount = getChildCount();
         int lineSizeIndex = LINE_SPACING;// 当前view添加行的下标位置
         int columnSizeIndex = COLUMN_SPACING;//列的下标
-        int screenWidth = getScreenWidth();//屏幕高度
+        int screenWidth = getScreenOrParentWidth();//屏幕高度
         int lineCount = 0;//当前行数
 
         for (int i = 0; i < childCount; i++) {
             View tempChildView = getChildAt(i);
             int childViewWidth = tempChildView.getMeasuredWidth();
             int childViewHeight = tempChildView.getMeasuredHeight();
-
-
+            
             int addedColumnIndex = columnSizeIndex + childViewWidth + COLUMN_SPACING; //判断添加之后的下标未知
             if (addedColumnIndex > screenWidth) { //如果添加以后下标超过当前屏幕宽度 则换行 重置下标
                 columnSizeIndex = COLUMN_SPACING;
@@ -155,8 +163,7 @@ public class CompleteLayout extends ViewGroup {
 
             }
             lineSizeIndex = (lineCount * (childViewHeight + LINE_SPACING));
-
-
+            
             int left = (columnSizeIndex == COLUMN_SPACING ? columnSizeIndex : columnSizeIndex + COLUMN_SPACING);//第一列不用增加间隔
 
             int top = (lineSizeIndex == LINE_SPACING ? lineSizeIndex : lineSizeIndex + LINE_SPACING); //第一行不用增加间隔
@@ -182,9 +189,9 @@ public class CompleteLayout extends ViewGroup {
         int width = 0;
         switch (measurWidthMod) {
             case MeasureSpec.AT_MOST://wrap_content
-                Log.i(TAG, "getWidthSize:MeasureSpec.AT_MOST ");
                 int childCount = getChildCount();
-                int screenSize = getScreenWidth(); //獲取屏幕寬度
+
+                int screenSize = getScreenOrParentWidth(); //獲取屏幕寬度
 
                 int totalChildWidth = 0;//所有子View的寬度
                 int spacting = LINE_SPACING * (childCount + 1);//間距大小
@@ -199,7 +206,7 @@ public class CompleteLayout extends ViewGroup {
                 }
                 break;
             case MeasureSpec.EXACTLY://固定大小 或者 match_content
-                Log.i(TAG, "getWidthSize:MeasureSpec.EXACTLY ");
+
                 width = measurWidthSize;
                 break;
             default:
@@ -218,21 +225,29 @@ public class CompleteLayout extends ViewGroup {
     private int getHeightSize(int measurHeightMod, int measurHeightSize) {
         int height = 0;
         switch (measurHeightMod) {
-            case MeasureSpec.AT_MOST://wrap_content
-                ;
+            case MeasureSpec.UNSPECIFIED: {
                 int childCount = getChildCount();
                 int lineCount = getLineCount();//子控件行数
                 int childViewHeight;
-
                 if (childCount != 0) { //有子空间才计算高度
-
+                    childViewHeight = getChildAt(0).getMeasuredHeight();//因为每个子View的高度都一样 只用取一个就行
+                    height = (lineCount * childViewHeight) + (LINE_SPACING * (lineCount + 1));//计算高度
+                    Log.i("lxy","获取高度"+height+"当前子view数量 = "+childCount+"    子控件行数 = "+lineCount+"    屏幕或者父View的宽度"+getScreenOrParentWidth());
+                } else {
+                    height = 0;
+                }
+                break;
+            }
+            case MeasureSpec.AT_MOST://wrap_content
+                int childCount = getChildCount();
+                int lineCount = getLineCount();//子控件行数
+                int childViewHeight;
+                if (childCount != 0) { //有子空间才计算高度
                     childViewHeight = getChildAt(0).getMeasuredHeight();//因为每个子View的高度都一样 只用取一个就行
                     height = (lineCount * childViewHeight) + (LINE_SPACING * (lineCount + 1));//计算高度
                 } else {
                     height = 0;
                 }
-
-                Log.i(TAG, "getHeightSize: height = "+height);
                 break;
             case MeasureSpec.EXACTLY://固定大小 或者 match_content
                 height = measurHeightSize;
@@ -248,9 +263,10 @@ public class CompleteLayout extends ViewGroup {
      * 获取行的数量
      */
     private int getLineCount() {
+
         int childCount = getChildCount();
         int columnSizeIndex = COLUMN_SPACING;//列的下标
-        int screenWidth = getScreenWidth();//屏幕高度
+        int screenWidth = getScreenOrParentWidth();//屏幕高度
         int lineCount = 0;//当前行数
 
 
@@ -261,6 +277,7 @@ public class CompleteLayout extends ViewGroup {
         for (int i = 0; i < childCount; i++) {
             View tempChildView = getChildAt(i);
             int childViewWidth = tempChildView.getMeasuredWidth();
+            Log.i("lxy","获取高度"+"    "+i+"子View宽度："+childViewWidth);
             int addedColumnIndex = columnSizeIndex + childViewWidth + COLUMN_SPACING;//判断添加之后的下标未知
             if (addedColumnIndex > screenWidth) { //如果添加以后下标超过当前屏幕宽度 则换行 重置下标
                 columnSizeIndex = COLUMN_SPACING; //重置下标
@@ -275,14 +292,20 @@ public class CompleteLayout extends ViewGroup {
 
     /**
      * 得到屏幕宽度
+     * 如果当前有父控件则设置为父控件的宽度
      *
      * @return
      */
-    private int getScreenWidth() {
-        WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-        return displayMetrics.widthPixels;
+    private int getScreenOrParentWidth() {
+        if (mParentWidth != -1) {
+            return mParentWidth;
+        } else {
+            //返回屏幕宽度
+            WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+            return displayMetrics.widthPixels;
+        }
     }
 
 
@@ -340,7 +363,7 @@ public class CompleteLayout extends ViewGroup {
         tempTextView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mAdapter != null) {
+                if (mAdapter != null && mAdapter.getItemClickListener() != null) {
                     mAdapter.getItemClickListener().onItemClick(mAdapter, (TextView) v, ((TextView) v).getText().toString(), (Integer) v.getTag());
                 }
             }
@@ -349,7 +372,7 @@ public class CompleteLayout extends ViewGroup {
         tempTextView.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if (mAdapter != null) {
+                if (mAdapter != null && mAdapter.getItemLongClickLisnter() != null) {
                     mAdapter.getItemLongClickLisnter().onItemLongClick(mAdapter, (TextView) v, ((TextView) v).getText().toString(), (Integer) v.getTag());
                     return true;
                 }
@@ -360,7 +383,6 @@ public class CompleteLayout extends ViewGroup {
         tempTextView.setText(text + position);
         addView(tempTextView);
     }
-
 
 
     /**

@@ -11,7 +11,7 @@
 
 
 
-    <declare-styleable name="CompleteLayout">
+    <declare-styleable name="styleable_auto_completeLayout">
 
         <attr name="TextSize" format="integer" /><!--textview字体大小-->
         <attr name="TextPadding" format="integer"/><!--textview的padding-->
